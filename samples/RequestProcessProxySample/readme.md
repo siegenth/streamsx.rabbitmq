@@ -1,48 +1,65 @@
 # MqStreamsProxy : MQRabbit/Streams High Throughput WEB Integration
 
-This example illustrates how the the RabbitMQRequestResponse() operator is used in a high though put web site, the web site is envisioned to have be processing micro services or standard gets/post. This will go through the operating contexts, design and installation. 
+Example Streams integrated into a large WEB site using the RabbitMQ toolkit. The toolkit
+and sample are avlable on GitHub. 
+  
+RabbitMQ is Message Hub used by large web sites to process requests. Web requests are  received, 
+decomposed, distributed to components (databases, appservers, analytics servers), processed, 
+ formatted and returned to the requester. Requests move though the site using Message Hub's that
+ handle the scaling and fallback processing that are enviable occur in large systems. 
 
-## Context 
-The intent is provide an example  within a significant web shop. A site that needs to to work loads dynamically without impacting the users experience.
-
-The Streams application would be used to respond to real time processing requests. The web site would specialized components to various aspect site processing. 
-
-- Mobile and Browser rendering.
-- Caching context
-- Security / Validation 
-
-The schematic illustrates Streams processing embedded in larger WEB environment, integrated with function specific components that process the requests. A significant web site is composed of a components that are routed and replicated to handle the current loads, Streams is anaylytics/streaming component of this. 
-The users request has been load balanced and scaled to the Streams application. 
+The following diagram illustrates such a system. 
 
 ![alt text](awsDesign.jpg)
+  
+In such an environment Streams is used to: 
+- Drive audio to text processing.
+- Score images in conjunction with SPSS.
+- Characterize video feeds.
+- Monitor and report pump pressure, speed and temperature
 
-The take away, Streams handles time bound and resources intensive processing. Superior components exist for: load balancing, routing, session management and rendering would be used in such an environment. 
+To run in this environment we're using the RPC Pattern. A pattern that allows requestors and Streams to be
+added and removed independently. 
 
-The sample uses an J2EE Server (Jetty) and AMQP  message (RabbitMQ) message broker. The message broker enables more clients (WebServer) and/or requests processors (Streams) to be added independently. 
+This is a Streams application communicating over RabbitMQ Message Bus using the RabbitMQRequestResponse()
+operator. The client, a jetty app server that driven with web requests (browser or curl.  The server, Streams application
+that can handle various requests. You can add/remove clients and servers without affecting the overall processing. 
 
-## Implementation Specifics
-The design is based upon the RabbitMQ's [Remote procedure call RPC](https://www.rabbitmq.com/tutorials/tutorial-six-python.html) pattern. Using the terminology of the design the application server is client of the Streams application. A client creates private response queue on start up, requests are sent over a common queue that all clients and servers are connected. The server (Streams application) gets the requests with a responseQueue identifier and processes the request. Responses are returned on the responseQueue the accompanied the request. 
 
-The design allows new clients (application servers) and server (Streams instances) to be added and removed independently. The only well know resource is the queue that all 
-requests from the client to server use. 
+## Context 
 
-The J2EE application uses the J2EEv3 asynchronous processing feature which enables multiple web requests to be outstanding at a time. The Streams example application
- is written as a pipeline.  
+The sample focuses on the messaging to Streams using RabbitMQ toolkit. As 
+load fluctuates new requestors and Streams instances can be added and dropped. 
+The Sample requestor is a asynchronous J2EE servlet, requests are made with a
+a browser or curl. Adding new requester involves adding a new servlet. 
 
-![alt text](streamsFlow.jpg)
 
-This simple implementation's drawback becomes apparent when one of the operator's goes compute bound, all the pipeline's prior pipeline nodes are delayed waiting for the CPU bound request to finish. Instantiating another server application resolve the issues, the message hub will distribute requests to the idle server. If the application server becomes inundated, new instance can be added as well. 
-
-The following diagram is a more focused  view the processing distribution. 
-
+We've implemented the a Message Bus RPC pattern described[here](https://www.rabbitmq.com/tutorials/tutorial-six-python.html). 
+The server side (Streams) uses the  RabbitMQRequestResponse() operator of the RabbitMQ tookit. 
+ 
+Focus on components : 
 ![alt text](ibmView.jpg)
 
-This example is a general case of processing Streams requests on a large web site. Significant websites' are customized beyond the scope of this example. The goal is provide some guidance with the provided code in order to integrates Streams component within your website's environment. 
+As the load changes new servlets and Streams instance are brought up and down. The load balancer 
+distrbutes the request across the web servers. A monitoring process is responsible for 
+bringing the components up and down. 
+- The sample uses an J2EE Server (Jetty) and AMQP message (RabbitMQ) message broker. The message broker enables more clients (WebServer) and/or requests processors (Streams) to be added independently. 
+- The design allows new clients (application servers) and server (Streams instances) to be added and removed independently. The only well know resource is the queue that all 
+requests from the client to server use. 
+- The J2EE application uses the J2EEv3 asynchronous processing feature which enables multiple web requests to be outstanding at a time. The Streams example application
+ is written as a pipeline.  
+- The Streams portion uses the RabbitMQRequestResponse() operator that accepts a number of commands for testing. Commands are 
+passed on the URL. The sample application's flow: 
+![alt text](streamsFlow.jpg)
+
+
 
 # MqStreamProxy Sample
-The sample consists of J2EE Liberty Servlet communicating with Streams via RabbitMQ.  This is a walk through
-of bringing up the sample and running a test(s) Tests are invoked using curl to the servlet, the servet passes
-the reqeust to Strams that generatates a response and communictates it back to the originating client. 
+The sample consists of Jetty Server communicating with Streams via RabbitMQ.  
+
+This walks through bringing up the sample and running a test. Tests are invoked using curl to the servlet,
+the servlet passes the reqeust to Streams that generates a response and communicates it back to 
+the originating client. 
 
 The components can be scaled independently by adding/removing Servlets or Streams applications as load fluctuates. 
 
@@ -59,27 +76,23 @@ processing results are returned following the opposite path.
 
 ## Components 
 
-* [Streams QSE](https://www.ibm.com/developerworks/downloads/im/streamsquick/index.html) : This is Includes Streams development environment where the sample code can be inspected and modified. Where everything runs.
-* [RabbitMQ](https://www.rabbitmq.com/download.html) download site. Must be installed and running, the steps are described below.
-* Maven : The demo uses maven to install a jetty server and run the war file.
+* [Streams QSE](https://www.ibm.com/developerworks/downloads/im/streamsquick/index.html) : This is includes Streams 
+development environment where the sample code can be inspected and modified.
+* [RabbitMQ](https://www.rabbitmq.com/download.html) download site. Must be installed and running. 
+* Maven : The demo uses maven to install the Jetty server and run the war file.
 * [JettyServer]:(https://www.eclipse.org/jetty/) : J2EE server used for demo. 
 * Optional - [LibertyServer](https://developer.ibm.com/wasdev/downloads/liberty-profile-using-eclipse/) : Includes the Eclipse development environment where the sample code can be inspected and modified. Used for development. 
 
 
-
-* RabbitMQ installed, 
-
-
-
 # Bring up the components. 
 
-## Intall RabbitMQ
+## Install RabbitMQ
 
-I installed RabbitMQ using this [link](https://gist.github.com/ravibhure/92e780ecc850cd5ab0ab) 
+Install RabbitMQ, instructions can be found [here](https://gist.github.com/ravibhure/92e780ecc850cd5ab0ab) 
 
 ## Bring up RabbitMQ
 
-To bring up the Rabbit
+To bring up the RabbitMQ
 ```
 sudo service rabbitmq-server start
 ```
@@ -120,9 +133,10 @@ Run the Streams application in Standalone mode.
 make stand
 ```
 
+
 ### Bring up Servlet
 
-The provided maven pom file will install Jetty, build and run Servlet in Jetty. 
+The provided maven pom file will install Jetty, build and run servlet using Jetty. 
 
 ```
 cd ... samples/RequestProcessProxySample/MqStreamsProxy
@@ -135,15 +149,20 @@ mvn jetty:run-war
 
 # Demo  
 
-Rest requests to the application can be made with curl from 
+REST requests to the application can be made with curl from 
 the command line. The request has the following format:
 
-* fill : number of 'A' to return. 
-* sleep : number of seconds to wait, simulates computation. 
+```bash
+curl "http://localhost:9080/MqStreamsProxy/MqStreamsProxy?fill=<fillCnt>&sleep=<sleepSec>&amp;mirror=0"
+```
+
+* fillCnt : number of 'A's to return 
+* sleepSec : number of seconds to wait, simulates computation 
 * mirror : reflect back request. 
 
 
 ### Request 
+
 ```bash
 curl "http://localhost:9080/MqStreamsProxy/MqStreamsProxy?fill=5&amp;sleep=5&amp;mirror=0"
 ```
@@ -154,6 +173,8 @@ The result request returns after 5 seconds, note that the 5 'A's of fill.
 ```
 {"sequenceNumber":"44","request":"fill=5&amp;sleep=1&amp;mirror=0","method":"GET","timeString":"","contextPath":"/MqStreamsProxy","block":"1","fill":"AAAAA","pathInfo":"/MqStreamsProxy"}
 ```
+
+
 
 ## Other
 * You can invoke mulitple clients and adjust the parameters.
@@ -167,7 +188,7 @@ can be set in the web.xml.
 
 * defaultRequestQueue : common queue that all servers are listening on
 * log : enable logging
-* timeout : time to timeout a reqequest
+* timeout : time to timeout a request
 * queueHost : host rabbitmq is running on
 * username : rabbitmq username
 * password : rabbitmq password
@@ -178,12 +199,11 @@ can be set in the web.xml.
 Deploy the resulting application using
    ... MqStreamProxy/target/MqStreamProxy-1.0.war
    
-```
+## Sample Addendum 
+All web sites are different, adapt the code to fit your environment. 
 
 ## RabbitMQ Addendum
 
 * By default, the guest user is prohibited from connecting to the broker remotely; it can only connect over a loopback interface (i.e. localhost). To remedy the situation refer to  : https://www.rabbitmq.com/access-control.html. 
 
 
-
-##
