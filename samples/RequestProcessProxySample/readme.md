@@ -1,12 +1,12 @@
 # MqStreamsProxy : MQRabbit/Streams High Throughput WEB Integration
 
-Example Streams integrated into a large WEB site using the RabbitMQ toolkit. The toolkit
-and sample are avlable on GitHub. 
+Example of using the Streams RabbitMQ toolkit in a large WEB site. The toolkit
+and sample are available on GitHub. 
   
-RabbitMQ is Message Hub used by large web sites to process requests. Web requests are  received, 
+RabbitMQ is Message Hub used by web sites to route requests. Web requests are  received, 
 decomposed, distributed to components (databases, appservers, analytics servers), processed, 
- formatted and returned to the requester. Requests move though the site using Message Hub's that
- handle the scaling and fallback processing that are enviable occur in large systems. 
+ formatted and returned to the requester. Requests move though the site using Message Hubs that
+ handle the scaling and fallback processing that are inevitable in web sites. 
 
 The following diagram illustrates such a system. 
 
@@ -18,7 +18,7 @@ In such an environment Streams is used to:
 - Characterize video feeds.
 - Monitor and report pump pressure, speed and temperature
 
-To run in this environment we're using the RPC Pattern. A pattern that allows requestors and Streams to be
+To run in this environment, we're using the RPC Pattern. A pattern that allows requestors and Streams to be
 added and removed independently. 
 
 This is a Streams application communicating over RabbitMQ Message Bus using the RabbitMQRequestResponse()
@@ -30,24 +30,23 @@ that can handle various requests. You can add/remove clients and servers without
 
 The sample focuses on the messaging to Streams using RabbitMQ toolkit. As 
 load fluctuates new requestors and Streams instances can be added and dropped. 
-The Sample requestor is a asynchronous J2EE servlet, requests are made with a
+The Sample requestor is an asynchronous J2EE servlet, requests are made with
 a browser or curl. Adding new requester involves adding a new servlet. 
 
 
-We've implemented the a Message Bus RPC pattern described[here](https://www.rabbitmq.com/tutorials/tutorial-six-python.html). 
-The server side (Streams) uses the  RabbitMQRequestResponse() operator of the RabbitMQ tookit. 
+We've implemented the Message Bus RPC pattern described [here](https://www.rabbitmq.com/tutorials/tutorial-six-python.html). 
+The server side (Streams) uses the RabbitMQRequestResponse() operator of the RabbitMQ tookit. 
  
 Focus on components : 
 ![alt text](ibmView.jpg)
 
-As the load changes new servlets and Streams instance are brought up and down. The load balancer 
-distrbutes the request across the web servers. A monitoring process is responsible for 
+As the load varies new servlets and Streams instance are brought up and down. The load balancer 
+distributes the requests across the web servers. A monitoring process is responsible for 
 bringing the components up and down. 
-- The sample uses an J2EE Server (Jetty) and AMQP message (RabbitMQ) message broker. The message broker enables more clients (WebServer) and/or requests processors (Streams) to be added independently. 
-- The design allows new clients (application servers) and server (Streams instances) to be added and removed independently. The only well know resource is the queue that all 
-requests from the client to server use. 
-- The J2EE application uses the J2EEv3 asynchronous processing feature which enables multiple web requests to be outstanding at a time. The Streams example application
- is written as a pipeline.  
+- The sample uses an J2EE Server (Jetty) and AMQP message (RabbitMQ) message broker. The 
+message broker enables clients (WebServer) and servers (Streams) to be added independently. 
+- The common resource is the queue that all requests from the client use.
+- The J2EE application uses the J2EEv3 asynchronous processing feature which enables multiple requests to be outstanding at a time. 
 - The Streams portion uses the RabbitMQRequestResponse() operator that accepts a number of commands for testing. Commands are 
 passed on the URL. The sample application's flow: 
 ![alt text](streamsFlow.jpg)
@@ -58,10 +57,10 @@ passed on the URL. The sample application's flow:
 The sample consists of Jetty Server communicating with Streams via RabbitMQ.  
 
 This walks through bringing up the sample and running a test. Tests are invoked using curl to the servlet,
-the servlet passes the reqeust to Streams that generates a response and communicates it back to 
+the servlet passes the request to Streams that generates a response and communicates it back to 
 the originating client. 
 
-The components can be scaled independently by adding/removing Servlets or Streams applications as load fluctuates. 
+The components can be scaled independently by adding/removing Servlets or Streams applications. 
 
 
 ### Directories : 
@@ -180,7 +179,7 @@ The result request returns after 5 seconds, note that the 5 'A's of fill.
 * You can invoke mulitple clients and adjust the parameters.
 * You can start muliple Streams applications if you want simultaneous processing. 
 
-# Addendums 
+# Addendum 
 
 ## Servlet Addendum 
 The servlet has a number of parameters that you may want change for your enviroment, these values
